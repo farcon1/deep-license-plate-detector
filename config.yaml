@@ -1,0 +1,23 @@
+dataset:
+  root: "data"
+  split_dir: "data"
+  image_exts: [".jpg", ".jpeg", ".png"]
+eda:
+  out_dir: "outputs/eda"
+  split: "all"
+  max_images: 0
+  compute_image_metrics_max: 20000
+  gallery_size: 36
+  seed: 42
+
+cv_baseline:
+  out_dir: "outputs/cv_baseline"
+  split: "all"
+  max_images: 0
+  iou_thresholds: [0.5, 0.7]
+  pr_points: 101
+  save_visuals: 200
+  seed: 42
+
+logging:
+  level: "INFO"
