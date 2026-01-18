@@ -1,0 +1,13 @@
+{
+  "n_images": 199996.0,
+  "iou_thr": 0.5,
+  "ap": 0.07527597995158895,
+  "best_f1": 0.24613883572696033,
+  "best_precision": 0.2652792382625175,
+  "best_recall": 0.22957459149182985,
+  "best_score_threshold": 0.49,
+  "mean_iou": 0.1953129250467472,
+  "median_iou": 0.0,
+  "success_rate_iou_ge_thr": 0.24090481809636194,
+  "ap_check": 0.07527597995158895
+}

@@ -1,0 +1,11 @@
+{
+  "n_images": 199996,
+  "pred_rate": 0.991239824796496,
+  "mean_score_pred_only": 0.5672664508011045,
+  "mean_iou": 0.1953129250467472,
+  "median_iou": 0.0,
+  "strict_thr": 0.7,
+  "strict_success_rate": 0.18229364587291746,
+  "n_read_fail": 0,
+  "n_no_candidates": 1752
+}
