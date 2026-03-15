@@ -1,0 +1,8 @@
+{
+  "delta_mean_iou_vs_cv": 0.5987010023761172,
+  "delta_strict_success_vs_cv": 0.6749769940673567,
+  "delta_success_rate_iou_0.50": 0.7406350954138012,
+  "delta_ap_iou_0.50": 0.9004183043898418,
+  "delta_success_rate_iou_0.70": 0.6749769940673567,
+  "delta_ap_iou_0.70": 0.7302129828306397
+}

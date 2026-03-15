@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="8b9d682b-80bc-47b1-b7f1-3fa0a1ee812d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../../dlpd/yolo_baseline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../dlpd/yolo_dataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../scripts/run_yolo_eval.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../scripts/run_yolo_export.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../scripts/run_yolo_pipeline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../scripts/run_yolo_train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../.idea/deep-license-plate-detector.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../../.idea/deep-license-plate-detector.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../dlpd/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../dlpd/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../dlpd/ccpd.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../dlpd/ccpd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../dlpd/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../dlpd/config.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 3
+}]]></component>
+  <component name="ProjectId" id="3AyqpfbaDuQJIWDo2gNuNTyZhI8" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-PY-252.23892.439" />
+        <option value="bundled-python-sdk-b3ae9b5d7125-f0eec537fc84-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.23892.439" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8b9d682b-80bc-47b1-b7f1-3fa0a1ee812d" name="Changes" comment="" />
+      <created>1773575342062</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773575342062</updated>
+      <workItem from="1773575343771" duration="3000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

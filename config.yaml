@@ -1,7 +1,8 @@
 dataset:
-  root: "data"
-  split_dir: "data"
+  root: "data/CCPD2019/CCPD2019/ccpd_base"
+  split_dir: "data/CCPD2019/CCPD2019/splits"
   image_exts: [".jpg", ".jpeg", ".png"]
+
 eda:
   out_dir: "outputs/eda"
   split: "all"
@@ -17,6 +18,66 @@ cv_baseline:
   iou_thresholds: [0.5, 0.7]
   pr_points: 101
   save_visuals: 200
+  seed: 42
+
+yolo_export:
+  out_dir: "outputs/yolo_dataset"
+  dataset_name: "ccpd_base_yolo"
+  splits: ["train", "val", "test"]
+  max_images_per_split: 0
+  link_mode: "auto"
+  overwrite: true
+  seed: 42
+
+yolo_train:
+  dataset_yaml: "outputs/yolo_dataset/dataset.yaml"
+  out_dir: "outputs/yolo_train/ccpd_base_yolo11n_960"
+  model: "yolo11n.pt"
+  epochs: 30
+  imgsz: 960
+  batch: 16
+  device: "0"
+  workers: 8
+  patience: 20
+  optimizer: "auto"
+  lr0: 0.01
+  lrf: 0.01
+  weight_decay: 0.0005
+  cache: false
+  pretrained: true
+  amp: true
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 5.0
+  translate: 0.08
+  scale: 0.35
+  shear: 2.0
+  perspective: 0.0005
+  fliplr: 0.5
+  mosaic: 1.0
+  mixup: 0.0
+  copy_paste: 0.0
+  close_mosaic: 10
+  seed: 42
+  resume: false
+
+yolo_eval:
+  dataset_yaml: "outputs/yolo_dataset/dataset.yaml"
+  weights: "runs/detect/outputs/yolo_train/ccpd_base_yolo11n_960/weights/best.pt"
+  out_dir: "outputs/yolo_eval"
+  split: "test"
+  max_images: 0
+  imgsz: 960
+  batch: 16
+  device: "0"
+  conf: 0.001
+  iou: 0.7
+  max_det: 10
+  iou_thresholds: [0.5, 0.7]
+  pr_points: 101
+  save_visuals: 200
+  compare_to_cv_dir: "outputs/cv_baseline"
   seed: 42
 
 logging:

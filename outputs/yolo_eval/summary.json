@@ -1,0 +1,27 @@
+{
+  "n_images": 141982,
+  "pred_rate": 0.9995703680748264,
+  "mean_score_pred_only": 0.777743673066752,
+  "mean_iou": 0.7940139274228645,
+  "median_iou": 0.8152686058766714,
+  "strict_thr": 0.7,
+  "strict_success_rate": 0.8572706399402741,
+  "n_read_fail": 0,
+  "n_no_predictions": 61,
+  "weights": "C:\\Users\\nikza\\Desktop\\magister\\VKR\\deep-license-plate-detector\\runs\\detect\\outputs\\yolo_train\\ccpd_base_yolo11n_960\\weights\\best.pt",
+  "split": "test",
+  "imgsz": 960,
+  "conf": 0.001,
+  "iou_nms": 0.7,
+  "max_det": 10,
+  "builtin_val": {
+    "metrics/precision(B)": 0.9807168257374478,
+    "metrics/recall(B)": 0.9779000265767375,
+    "metrics/mAP50(B)": 0.9844486490482941,
+    "metrics/mAP50-95(B)": 0.6114220918747042,
+    "fitness": 0.6114220918747042,
+    "map50_95": 0.6114220918747042,
+    "map50": 0.9844486490482941,
+    "map75": 0.7069090349109073
+  }
+}

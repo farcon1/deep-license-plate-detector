@@ -1,0 +1,76 @@
+{
+  "rows": [
+    {
+      "slice": "all",
+      "n": 141982.0,
+      "mean_iou": 0.7940139274228645,
+      "median_iou": 0.8152686058766714,
+      "mean_score": 0.7769798976300271,
+      "success_rate_iou_ge_0.50": 0.9815399135101632,
+      "success_rate_iou_ge_0.70": 0.8572706399402741
+    },
+    {
+      "slice": "small_area_q25",
+      "n": 35685.0,
+      "mean_iou": 0.8291632701556012,
+      "median_iou": 0.8425254134421017,
+      "mean_score": 0.7122584703128617,
+      "success_rate_iou_ge_0.50": 0.9924337957124842,
+      "success_rate_iou_ge_0.70": 0.9490822474429031
+    },
+    {
+      "slice": "large_area_q75",
+      "n": 35630.0,
+      "mean_iou": 0.7519530069724715,
+      "median_iou": 0.785874384421726,
+      "mean_score": 0.812914157046395,
+      "success_rate_iou_ge_0.50": 0.9511928150435026,
+      "success_rate_iou_ge_0.70": 0.7460005613247264
+    },
+    {
+      "slice": "dark_q25",
+      "n": 36042.0,
+      "mean_iou": 0.7484316522857676,
+      "median_iou": 0.7774917823068315,
+      "mean_score": 0.7588690529332226,
+      "success_rate_iou_ge_0.50": 0.9453138005660063,
+      "success_rate_iou_ge_0.70": 0.7054270018311969
+    },
+    {
+      "slice": "bright_q75",
+      "n": 36497.0,
+      "mean_iou": 0.8067345106649325,
+      "median_iou": 0.8222708448332446,
+      "mean_score": 0.7854314012006163,
+      "success_rate_iou_ge_0.50": 0.9917801463133956,
+      "success_rate_iou_ge_0.70": 0.899936981121736
+    },
+    {
+      "slice": "blur_q75",
+      "n": 35704.0,
+      "mean_iou": 0.8104813290027412,
+      "median_iou": 0.8233606654987728,
+      "mean_score": 0.8273132087418906,
+      "success_rate_iou_ge_0.50": 0.9938662334752408,
+      "success_rate_iou_ge_0.70": 0.9228097692135335
+    },
+    {
+      "slice": "tilt_h_q75",
+      "n": 38239.0,
+      "mean_iou": 0.797944632725906,
+      "median_iou": 0.8128014538830935,
+      "mean_score": 0.815340874124011,
+      "success_rate_iou_ge_0.50": 0.9895133240932033,
+      "success_rate_iou_ge_0.70": 0.8989774837208085
+    },
+    {
+      "slice": "tilt_v_q75",
+      "n": 36565.0,
+      "mean_iou": 0.7667362035363935,
+      "median_iou": 0.7885209278166911,
+      "mean_score": 0.8073465512656881,
+      "success_rate_iou_ge_0.50": 0.9781485026664843,
+      "success_rate_iou_ge_0.70": 0.8041843292766306
+    }
+  ]
+}

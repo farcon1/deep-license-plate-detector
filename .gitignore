@@ -2,6 +2,12 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-outputs/cv_baseline/visuals
 data/
+outputs/cv_baseline/visuals
+outputs/yolo_dataset/
+outputs/yolo_train/
+outputs/yolo_eval/visuals/
+runs/
 .DS_Store
+*.csv
+*.pt
