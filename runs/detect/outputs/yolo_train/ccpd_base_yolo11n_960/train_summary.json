@@ -1,0 +1,12 @@
+{
+  "data_yaml": "C:\\Users\\nikza\\Desktop\\magister\\VKR\\deep-license-plate-detector\\outputs\\yolo_dataset\\dataset.yaml",
+  "model_name": "yolo11n.pt",
+  "save_dir": "C:\\Users\\nikza\\Desktop\\magister\\VKR\\deep-license-plate-detector\\runs\\detect\\outputs\\yolo_train\\ccpd_base_yolo11n_960",
+  "best_weights": "C:\\Users\\nikza\\Desktop\\magister\\VKR\\deep-license-plate-detector\\runs\\detect\\outputs\\yolo_train\\ccpd_base_yolo11n_960\\weights\\best.pt",
+  "last_weights": "C:\\Users\\nikza\\Desktop\\magister\\VKR\\deep-license-plate-detector\\runs\\detect\\outputs\\yolo_train\\ccpd_base_yolo11n_960\\weights\\last.pt",
+  "epochs": 30,
+  "imgsz": 960,
+  "batch": 16,
+  "device": "0",
+  "seed": 42
+}

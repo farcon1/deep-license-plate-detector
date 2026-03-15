@@ -7,7 +7,7 @@ outputs/cv_baseline/visuals
 outputs/yolo_dataset/
 outputs/yolo_train/
 outputs/yolo_eval/visuals/
-runs/
+runs/mlflow/
 .DS_Store
 *.csv
 *.pt
