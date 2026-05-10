@@ -5,3 +5,9 @@ opencv-python==4.10.0.84
 Pillow==11.0.0
 tqdm==4.66.6
 pyyaml==6.0.2
+pytesseract==0.3.13
+easyocr==1.7.2
+paddleocr==3.5.0
+paddlepaddle==3.3.1
+tabulate==0.10.0
+tesseract==0.1.3

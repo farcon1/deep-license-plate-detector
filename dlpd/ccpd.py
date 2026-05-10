@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set, Tuple
-import time
+
 from .utils import read_text_lines
+
+
+_FILE_INDEX_CACHE: Dict[str, Tuple[Dict[str, Path], Dict[str, Path]]] = {}
 
 
 @dataclass(frozen=True)
@@ -332,63 +336,312 @@ def load_splits(split_dir: Path, dataset_root: Optional[Path] = None) -> Dict[st
     return splits
 
 
-def resolve_split_items(dataset_root: Path, items: List[str], extra_roots: Optional[List[Path]] = None) -> List[Path]:
-    logging.info("[resolve_split_items] START dataset_root=%s n_items=%d", dataset_root, len(items))
+def _normalize_split_item_key(value: str | Path) -> str:
+    s = str(value).strip().replace("\\", "/")
+    while s.startswith("./"):
+        s = s[2:]
+    while s.startswith("/"):
+        s = s[1:]
+    return s
 
+
+def _root_cache_key(root: Path) -> str:
+    try:
+        return str(root.resolve())
+    except Exception:
+        return str(root)
+
+
+def _dedupe_roots(roots: List[Path]) -> List[Path]:
     out: List[Path] = []
-    roots = [dataset_root]
-    if extra_roots:
-        roots.extend(extra_roots)
-    roots = [Path(r) for r in roots if r is not None]
+    seen: Set[str] = set()
 
-    direct_hits = 0
-    rglob_hits = 0
-    misses = 0
+    for root in roots:
+        if root is None:
+            continue
+        root = Path(root)
+        key = _root_cache_key(root)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(root)
 
-    for idx, it in enumerate(items, start=1):
-        if idx % 5000 == 0:
+    return out
+
+
+def _build_root_file_index(root: Path) -> Tuple[Dict[str, Path], Dict[str, Path]]:
+    root = Path(root)
+
+    relative_map: Dict[str, Path] = {}
+    basename_map: Dict[str, Path] = {}
+
+    logging.info("[_build_root_file_index] START root=%s", root)
+
+    scanned = 0
+    files = 0
+
+    for p in root.rglob("*"):
+        scanned += 1
+
+        if scanned % 50000 == 0:
             logging.info(
-                "[resolve_split_items] progress idx=%d/%d direct_hits=%d rglob_hits=%d misses=%d",
-                idx, len(items), direct_hits, rglob_hits, misses
+                "[_build_root_file_index] progress root=%s scanned=%d files=%d",
+                root, scanned, files
             )
 
-        s = it.strip().lstrip("./")
-        p = Path(s)
-
-        if p.is_absolute() and p.exists():
-            out.append(p)
-            direct_hits += 1
+        if not p.is_file():
             continue
 
+        files += 1
+
+        try:
+            rel = p.relative_to(root)
+            rel_key = _normalize_split_item_key(rel)
+        except Exception:
+            rel_key = _normalize_split_item_key(p.name)
+
+        if rel_key not in relative_map:
+            relative_map[rel_key] = p
+
+        if p.name not in basename_map:
+            basename_map[p.name] = p
+
+    logging.info(
+        "[_build_root_file_index] END root=%s scanned=%d files=%d relative_keys=%d basename_keys=%d",
+        root, scanned, files, len(relative_map), len(basename_map)
+    )
+
+    return relative_map, basename_map
+
+
+def _get_root_file_index(root: Path) -> Tuple[Dict[str, Path], Dict[str, Path]]:
+    key = _root_cache_key(root)
+    if key not in _FILE_INDEX_CACHE:
+        _FILE_INDEX_CACHE[key] = _build_root_file_index(root)
+    return _FILE_INDEX_CACHE[key]
+
+
+def resolve_split_items(dataset_root: Path, items: List[str], extra_roots: Optional[List[Path]] = None) -> List[Path]:
+    """
+    Быстрое разрешение путей из split-файлов CCPD.
+
+    Логика:
+    1. Не делаем rglob по всему ccpd_base заранее.
+    2. Сначала пробуем прямые варианты:
+       - absolute path;
+       - dataset_root / relative_path;
+       - dataset_root / basename.
+    3. Только если что-то не найдено — строим индекс dataset_root.
+    4. extra_roots используются только как последний fallback.
+
+    Это убирает многокилометровый скан ccpd_base перед каждым экспериментом.
+    """
+    logging.info("[resolve_split_items] START dataset_root=%s n_items=%d", dataset_root, len(items))
+
+    dataset_root = Path(dataset_root)
+
+    out: List[Optional[Path]] = [None] * len(items)
+    unresolved: List[Tuple[int, str]] = []
+
+    absolute_hits = 0
+    direct_path_hits = 0
+    basename_direct_hits = 0
+    indexed_rel_hits = 0
+    indexed_basename_hits = 0
+    fallback_hits = 0
+
+    # 1. FAST PATH: никаких rglob.
+    for idx, it in enumerate(items):
+        if idx > 0 and idx % 5000 == 0:
+            logging.info(
+                "[resolve_split_items] fast path progress idx=%d/%d absolute_hits=%d direct_path_hits=%d basename_direct_hits=%d unresolved=%d",
+                idx,
+                len(items),
+                absolute_hits,
+                direct_path_hits,
+                basename_direct_hits,
+                len(unresolved),
+            )
+
+        s = str(it).strip()
+        p = Path(s)
+
+        if not s:
+            unresolved.append((idx, s))
+            continue
+
+        # 1.1 Абсолютный путь.
+        if p.is_absolute() and p.exists():
+            out[idx] = p
+            absolute_hits += 1
+            continue
+
+        # 1.2 Относительный путь из split-файла.
+        rel_key = _normalize_split_item_key(s)
+        rel_candidate = dataset_root / Path(rel_key)
+
+        if rel_candidate.exists() and rel_candidate.is_file():
+            out[idx] = rel_candidate
+            direct_path_hits += 1
+            continue
+
+        # 1.3 basename напрямую в ccpd_base.
+        basename_candidate = dataset_root / p.name
+
+        if basename_candidate.exists() and basename_candidate.is_file():
+            out[idx] = basename_candidate
+            basename_direct_hits += 1
+            continue
+
+        unresolved.append((idx, s))
+
+    # Если всё найдено прямыми проверками — сразу возвращаемся.
+    if not unresolved:
+        resolved_out = [p for p in out if p is not None]
+        logging.info(
+            "[resolve_split_items] END fast resolved=%d absolute_hits=%d direct_path_hits=%d basename_direct_hits=%d misses=0",
+            len(resolved_out),
+            absolute_hits,
+            direct_path_hits,
+            basename_direct_hits,
+        )
+        return resolved_out
+
+    logging.warning(
+        "[resolve_split_items] fast path left unresolved=%d. Building base_root index only now.",
+        len(unresolved),
+    )
+
+    # 2. SLOW PATH: строим индекс только если fast path не смог найти часть файлов.
+    indexes: List[Tuple[Path, Dict[str, Path], Dict[str, Path]]] = []
+
+    if dataset_root.exists() and dataset_root.is_dir():
+        rel_map, base_map = _get_root_file_index(dataset_root)
+        indexes.append((dataset_root, rel_map, base_map))
+    else:
+        logging.warning("[resolve_split_items] dataset_root missing or not dir: %s", dataset_root)
+
+    still_unresolved: List[Tuple[int, str]] = []
+
+    for pos, (idx, s) in enumerate(unresolved, start=1):
+        if pos % 5000 == 0:
+            logging.info(
+                "[resolve_split_items] index fallback progress idx=%d/%d indexed_rel_hits=%d indexed_basename_hits=%d still_unresolved=%d",
+                pos,
+                len(unresolved),
+                indexed_rel_hits,
+                indexed_basename_hits,
+                len(still_unresolved),
+            )
+
+        p = Path(s)
+        rel_key = _normalize_split_item_key(s)
+        basename = p.name
+
         matched = False
-        for root in roots:
-            cand = root / p
-            if cand.exists():
-                out.append(cand)
-                direct_hits += 1
+
+        for _, rel_map, _ in indexes:
+            cand = rel_map.get(rel_key)
+            if cand is not None:
+                out[idx] = cand
+                indexed_rel_hits += 1
                 matched = True
                 break
+
         if matched:
             continue
 
-        for root in roots:
-            matches = list(root.rglob(p.name))
-            if matches:
-                out.append(matches[0])
-                rglob_hits += 1
+        for _, _, base_map in indexes:
+            cand = base_map.get(basename)
+            if cand is not None:
+                out[idx] = cand
+                indexed_basename_hits += 1
                 matched = True
                 break
 
         if not matched:
-            misses += 1
-            if misses <= 20:
-                logging.warning("[resolve_split_items] MISS item=%s", it)
+            still_unresolved.append((idx, s))
+
+    # 3. EXTRA ROOTS: только если явно переданы и всё ещё есть misses.
+    if still_unresolved and extra_roots:
+        roots = _dedupe_roots([Path(r) for r in extra_roots if r is not None and Path(r) != dataset_root])
+
+        logging.warning(
+            "[resolve_split_items] base_root still did not resolve %d items. Trying extra_roots=%s",
+            len(still_unresolved),
+            [str(r) for r in roots],
+        )
+
+        fallback_indexes: List[Tuple[Path, Dict[str, Path], Dict[str, Path]]] = []
+
+        for root in roots:
+            if root.exists() and root.is_dir():
+                rel_map, base_map = _get_root_file_index(root)
+                fallback_indexes.append((root, rel_map, base_map))
+
+        next_unresolved: List[Tuple[int, str]] = []
+
+        for pos, (idx, s) in enumerate(still_unresolved, start=1):
+            if pos % 5000 == 0:
+                logging.info(
+                    "[resolve_split_items] extra fallback progress idx=%d/%d fallback_hits=%d still_misses=%d",
+                    pos,
+                    len(still_unresolved),
+                    fallback_hits,
+                    len(next_unresolved),
+                )
+
+            p = Path(s)
+            rel_key = _normalize_split_item_key(s)
+            basename = p.name
+
+            matched = False
+
+            for _, rel_map, _ in fallback_indexes:
+                cand = rel_map.get(rel_key)
+                if cand is not None:
+                    out[idx] = cand
+                    fallback_hits += 1
+                    matched = True
+                    break
+
+            if matched:
+                continue
+
+            for _, _, base_map in fallback_indexes:
+                cand = base_map.get(basename)
+                if cand is not None:
+                    out[idx] = cand
+                    fallback_hits += 1
+                    matched = True
+                    break
+
+            if not matched:
+                next_unresolved.append((idx, s))
+
+        still_unresolved = next_unresolved
+
+    misses = len(still_unresolved)
+
+    if misses:
+        for _, missed_item in still_unresolved[:20]:
+            logging.warning("[resolve_split_items] MISS item=%s", missed_item)
+
+    resolved_out = [p for p in out if p is not None]
 
     logging.info(
-        "[resolve_split_items] END resolved=%d direct_hits=%d rglob_hits=%d misses=%d",
-        len(out), direct_hits, rglob_hits, misses
+        "[resolve_split_items] END resolved=%d absolute_hits=%d direct_path_hits=%d basename_direct_hits=%d indexed_rel_hits=%d indexed_basename_hits=%d fallback_hits=%d misses=%d",
+        len(resolved_out),
+        absolute_hits,
+        direct_path_hits,
+        basename_direct_hits,
+        indexed_rel_hits,
+        indexed_basename_hits,
+        fallback_hits,
+        misses,
     )
-    return out
+
+    return resolved_out
 
 def _iter_from_dir(
     root: Path,
@@ -475,7 +728,16 @@ def iter_ccpd_records(
     split_l = str(split).lower()
     seen: Set[str] = set()
 
-    extra_roots = [base_root, base_root.parent, base_root.parent.parent, Path(dataset_root)]
+    # ВАЖНО:
+    # Раньше здесь было:
+    # extra_roots = [base_root, base_root.parent, base_root.parent.parent, Path(dataset_root)]
+    #
+    # Из-за этого при split-файлах сканировались родительские директории:
+    # data/CCPD2019/CCPD2019
+    # data/CCPD2019
+    #
+    # Теперь используем только base_root / ccpd_base.
+    extra_roots: List[Path] = []
 
     if split_l in ("train", "val", "test") and split_l in split_roots:
         logging.info("[iter_ccpd_records] branch=direct_split split=%s path=%s", split_l, split_roots[split_l])

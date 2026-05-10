@@ -1,0 +1,46 @@
+services:
+  infer:
+    build:
+      context: .
+      dockerfile: Dockerfile.infer
+    image: dlpd-infer:latest
+    container_name: dlpd-infer
+    environment:
+      DLPD_CONFIG: /app/config.yaml
+      DETECTOR_WEIGHTS: /app/models/detector/best.pt
+      OCR_WEIGHTS: /app/models/ocr/best.pt
+      DEVICE: cpu
+      DETECTOR_IMGSZ: "960"
+      DETECTOR_CONF: "0.25"
+      DETECTOR_IOU: "0.70"
+      DETECTOR_MAX_DET: "10"
+      MAX_UPLOAD_MB: "20"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./outputs/alpr_infer:/app/outputs/alpr_infer
+
+  train:
+    build:
+      context: .
+      dockerfile: Dockerfile.train
+    image: dlpd-train:latest
+    container_name: dlpd-train
+    working_dir: /app
+    environment:
+      DLPD_CONFIG: /app/config.yaml
+      CUDA_VISIBLE_DEVICES: "0"
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./runs:/app/runs
+      - ./config.yaml:/app/config.yaml
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true

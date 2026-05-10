@@ -1,0 +1,44 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libgl1 \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip setuptools wheel
+
+RUN pip install --index-url https://download.pytorch.org/whl/cpu \
+    torch==2.5.1 \
+    torchvision==0.20.1
+
+COPY requirements/infer.txt /app/requirements/infer.txt
+RUN pip install -r /app/requirements/infer.txt
+
+COPY dlpd /app/dlpd
+COPY scripts /app/scripts
+COPY config.yaml /app/config.yaml
+COPY models /app/models
+
+RUN mkdir -p /app/input /app/outputs/alpr_infer
+
+ENV DLPD_CONFIG=/app/config.yaml
+ENV DETECTOR_WEIGHTS=/app/models/detector/best.pt
+ENV OCR_WEIGHTS=/app/models/ocr/best.pt
+ENV DEVICE=cpu
+ENV DETECTOR_IMGSZ=960
+ENV DETECTOR_CONF=0.25
+ENV DETECTOR_IOU=0.70
+ENV DETECTOR_MAX_DET=10
+ENV MAX_UPLOAD_MB=20
+
+EXPOSE 8000
+
+CMD ["uvicorn", "dlpd.web_app:app", "--host", "0.0.0.0", "--port", "8000"]

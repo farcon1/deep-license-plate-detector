@@ -1,13 +1,238 @@
-.venv/
+# ============================================================
+# Python
+# ============================================================
+
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+
+*.so
+*.pyd
+*.pyo
+
+.Python
+.python-version
+
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ============================================================
+# Virtual environments
+# ============================================================
+
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================================
+# Python packaging / tooling caches
+# ============================================================
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
 .ipynb_checkpoints/
-data/
-outputs/cv_baseline/visuals
-outputs/yolo_dataset/
-outputs/yolo_train/
-outputs/yolo_eval/visuals/
-runs/mlflow/
+
+# ============================================================
+# Jupyter / notebooks
+# ============================================================
+
+*.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# ============================================================
+# IDE / editors
+# ============================================================
+
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# ============================================================
+# OS files
+# ============================================================
+
 .DS_Store
-*.csv
-*.pt
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Environment / local config
+# ============================================================
+
+.env
+.env.*
+!.env.example
+
+*.local
+local_settings.py
+
+# ============================================================
+# Logs
+# ============================================================
+
+*.log
+logs/
+log/
+
+# ============================================================
+# Temporary files
+# ============================================================
+
+tmp/
+temp/
+.cache/
+cache/
+
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# ============================================================
+# Datasets
+# ============================================================
+
+data/*
+
+# Common dataset/archive formats
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# ============================================================
+# Project outputs
+# ============================================================
+
+outputs/
+!outputs/.gitkeep
+
+# Explicit project output directories
+outputs/eda/
+outputs/cv_baseline/visuals/
+outputs/ocr_dataset/
+outputs/ocr_dataset_robust/images
+outputs/ocr_dataset_robust/labels
+outputs/ocr_eval/*.csv
+outputs/ocr_eval_robust/
+outputs/ocr_external_baselines/error_crops
+outputs/ocr_external_baselines/crops
+outputs/ocr_train/
+outputs/yolo_dataset/
+outputs/yolo_eval/
+outputs/yolo_train/
+
+# ============================================================
+# Ultralytics / YOLO runs
+# ============================================================
+
+runs/
+wandb/
+mlruns/
+mlartifacts/
+
+# ============================================================
+# Model weights and ML artifacts
+# ============================================================
+# Store large weights outside Git or use Git LFS.
+
+*.pth
+*.onnx
+*.engine
+*.torchscript
+*.tflite
+*.pb
+*.ckpt
+*.safetensors
+*.weights
+*.bin
+
+# Production model directories.
+# The application expects local files here, but they should not be committed as normal Git blobs.
+models/**/*.pth
+models/**/*.onnx
+models/**/*.engine
+models/**/*.safetensors
+
+# Keep empty model directories if .gitkeep files are used.
+!models/.gitkeep
+!models/detector/.gitkeep
+!models/ocr/.gitkeep
+
+# ============================================================
+# Generated reports / visualizations
+# ============================================================
+
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.tif
+*.tiff
+*.webp
+
+
+# ============================================================
+# CSV / JSON generated experiment tables
+# ============================================================
+# Most generated metric files are under outputs/ and already ignored.
+# These extra rules protect accidental dumps in the root.
+
+# ============================================================
+# Docker
+# ============================================================
+
+.docker/
+docker-compose.override.yml
+
+# ============================================================
+# FastAPI / runtime uploads
+# ============================================================
+
+uploads/
+media/
+staticfiles/
+
+# ============================================================
+# Windows / PowerShell local files
+# ============================================================
+
+*.lnk
+*.ps1~

@@ -1,6 +1,6 @@
 dataset:
   root: "data/CCPD2019/CCPD2019/ccpd_base"
-  split_dir: "data/CCPD2019/CCPD2019/splits"
+  split_dir: "data/CCPD2019/CCPD2019/splits_base_only"
   image_exts: [".jpg", ".jpeg", ".png"]
 
 eda:
@@ -78,6 +78,39 @@ yolo_eval:
   pr_points: 101
   save_visuals: 200
   compare_to_cv_dir: "outputs/cv_baseline"
+  seed: 42
+
+ocr_export:
+  out_dir: "outputs/ocr_dataset"
+  splits: ["train", "val", "test"]
+  max_images_per_split: 0
+  crop_mode: "corners"
+  crop_size: [224, 64]
+  overwrite: true
+  seed: 42
+
+ocr_train:
+  manifest_train: "outputs/ocr_dataset/labels/train.csv"
+  manifest_val: "outputs/ocr_dataset/labels/val.csv"
+  out_dir: "outputs/ocr_train/ccpd_ocr_resnet34"
+  model: "resnet34"
+  image_size: [224, 64]
+  epochs: 20
+  batch: 128
+  lr: 0.001
+  weight_decay: 0.0001
+  device: "0"
+  num_workers: 8
+  seed: 42
+
+ocr_eval:
+  manifest_test: "outputs/ocr_dataset/labels/test.csv"
+  weights: "outputs/ocr_train/ccpd_ocr_resnet34/best.pt"
+  out_dir: "outputs/ocr_eval"
+  image_size: [224, 64]
+  batch: 256
+  device: "0"
+  num_workers: 8
   seed: 42
 
 logging:

@@ -1,0 +1,35 @@
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libgl1 \
+    libgomp1 \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip setuptools wheel
+
+COPY requirements /app/requirements
+RUN pip install -r /app/requirements/train.txt
+
+COPY dlpd /app/dlpd
+COPY scripts /app/scripts
+COPY config.yaml /app/config.yaml
+COPY yolo11n.pt /app/yolo11n.pt
+COPY yolo26n.pt /app/yolo26n.pt
+
+RUN mkdir -p /app/data /app/outputs /app/runs
+
+ENV DLPD_CONFIG=/app/config.yaml
+ENV CUDA_VISIBLE_DEVICES=0
+
+CMD ["bash"]

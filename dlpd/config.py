@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import yaml
 
@@ -102,6 +102,45 @@ class YoloEvalCfg:
 
 
 @dataclass(frozen=True)
+class OcrExportCfg:
+    out_dir: Path
+    splits: List[str]
+    max_images_per_split: int
+    crop_mode: str
+    crop_size: Tuple[int, int]
+    overwrite: bool
+    seed: int
+
+
+@dataclass(frozen=True)
+class OcrTrainCfg:
+    manifest_train: Path
+    manifest_val: Path
+    out_dir: Path
+    model: str
+    image_size: Tuple[int, int]
+    epochs: int
+    batch: int
+    lr: float
+    weight_decay: float
+    device: str
+    num_workers: int
+    seed: int
+
+
+@dataclass(frozen=True)
+class OcrEvalCfg:
+    manifest_test: Path
+    weights: Path
+    out_dir: Path
+    image_size: Tuple[int, int]
+    batch: int
+    device: str
+    num_workers: int
+    seed: int
+
+
+@dataclass(frozen=True)
 class LoggingCfg:
     level: str
 
@@ -114,6 +153,9 @@ class AppCfg:
     yolo_export: YoloExportCfg
     yolo_train: YoloTrainCfg
     yolo_eval: YoloEvalCfg
+    ocr_export: OcrExportCfg
+    ocr_train: OcrTrainCfg
+    ocr_eval: OcrEvalCfg
     logging: LoggingCfg
 
 
@@ -126,6 +168,14 @@ def _load_batch_value(value: int | str) -> int | str:
     return int(value)
 
 
+def _load_size(value, default: Tuple[int, int]) -> Tuple[int, int]:
+    if value is None:
+        return default
+    if isinstance(value, (list, tuple)) and len(value) == 2:
+        return int(value[0]), int(value[1])
+    raise ValueError(f"Expected image size as [width, height], got: {value}")
+
+
 def load_config(path: str | Path) -> AppCfg:
     p = Path(path)
     raw = yaml.safe_load(p.read_text(encoding="utf-8"))
@@ -136,6 +186,9 @@ def load_config(path: str | Path) -> AppCfg:
     yexp = raw.get("yolo_export", {})
     ytr = raw.get("yolo_train", {})
     yev = raw.get("yolo_eval", {})
+    oexp = raw.get("ocr_export", {})
+    otr = raw.get("ocr_train", {})
+    oev = raw.get("ocr_eval", {})
     lg = raw.get("logging", {"level": "INFO"})
 
     return AppCfg(
@@ -220,6 +273,39 @@ def load_config(path: str | Path) -> AppCfg:
             save_visuals=int(yev.get("save_visuals", 200)),
             compare_to_cv_dir=Path(yev.get("compare_to_cv_dir", "outputs/cv_baseline")),
             seed=int(yev.get("seed", 42)),
+        ),
+        ocr_export=OcrExportCfg(
+            out_dir=Path(oexp.get("out_dir", "outputs/ocr_dataset")),
+            splits=[str(x).lower() for x in oexp.get("splits", ["train", "val", "test"])],
+            max_images_per_split=int(oexp.get("max_images_per_split", 0)),
+            crop_mode=str(oexp.get("crop_mode", "bbox")).lower(),
+            crop_size=_load_size(oexp.get("crop_size", [224, 64]), default=(224, 64)),
+            overwrite=bool(oexp.get("overwrite", True)),
+            seed=int(oexp.get("seed", 42)),
+        ),
+        ocr_train=OcrTrainCfg(
+            manifest_train=Path(otr.get("manifest_train", "outputs/ocr_dataset/labels/train.csv")),
+            manifest_val=Path(otr.get("manifest_val", "outputs/ocr_dataset/labels/val.csv")),
+            out_dir=Path(otr.get("out_dir", "outputs/ocr_train/ccpd_ocr_resnet18")),
+            model=str(otr.get("model", "resnet18")),
+            image_size=_load_size(otr.get("image_size", [224, 64]), default=(224, 64)),
+            epochs=int(otr.get("epochs", 20)),
+            batch=int(otr.get("batch", 128)),
+            lr=float(otr.get("lr", 0.001)),
+            weight_decay=float(otr.get("weight_decay", 0.0001)),
+            device=str(otr.get("device", "0")),
+            num_workers=int(otr.get("num_workers", 8)),
+            seed=int(otr.get("seed", 42)),
+        ),
+        ocr_eval=OcrEvalCfg(
+            manifest_test=Path(oev.get("manifest_test", "outputs/ocr_dataset/labels/test.csv")),
+            weights=Path(oev.get("weights", "outputs/ocr_train/ccpd_ocr_resnet18/best.pt")),
+            out_dir=Path(oev.get("out_dir", "outputs/ocr_eval")),
+            image_size=_load_size(oev.get("image_size", [224, 64]), default=(224, 64)),
+            batch=int(oev.get("batch", 256)),
+            device=str(oev.get("device", "0")),
+            num_workers=int(oev.get("num_workers", 8)),
+            seed=int(oev.get("seed", 42)),
         ),
         logging=LoggingCfg(level=str(lg.get("level", "INFO"))),
     )
