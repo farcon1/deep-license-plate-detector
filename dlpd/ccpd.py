@@ -167,13 +167,10 @@ def resolve_ccpd_base_root(user_root: Path, exts: List[str]) -> Path:
     user_root = Path(user_root)
     logging.info("[resolve_ccpd_base_root] START user_root=%s", user_root)
 
-    # Если пользователь уже указал точный ccpd_base - сразу принимаем его.
-    # Никаких рекурсивных сканов тут делать не нужно.
     if user_root.exists() and user_root.is_dir() and user_root.name.lower() == "ccpd_base":
         logging.info("[resolve_ccpd_base_root] FAST RETURN exact ccpd_base=%s", user_root)
         return user_root
 
-    # Если пользователь указал train/val/test внутри ccpd_base - возвращаем родителя.
     if (
         user_root.exists()
         and user_root.is_dir()
@@ -424,17 +421,6 @@ def _get_root_file_index(root: Path) -> Tuple[Dict[str, Path], Dict[str, Path]]:
 def resolve_split_items(dataset_root: Path, items: List[str], extra_roots: Optional[List[Path]] = None) -> List[Path]:
     """
     Быстрое разрешение путей из split-файлов CCPD.
-
-    Логика:
-    1. Не делаем rglob по всему ccpd_base заранее.
-    2. Сначала пробуем прямые варианты:
-       - absolute path;
-       - dataset_root / relative_path;
-       - dataset_root / basename.
-    3. Только если что-то не найдено — строим индекс dataset_root.
-    4. extra_roots используются только как последний fallback.
-
-    Это убирает многокилометровый скан ccpd_base перед каждым экспериментом.
     """
     logging.info("[resolve_split_items] START dataset_root=%s n_items=%d", dataset_root, len(items))
 
@@ -562,7 +548,6 @@ def resolve_split_items(dataset_root: Path, items: List[str], extra_roots: Optio
         if not matched:
             still_unresolved.append((idx, s))
 
-    # 3. EXTRA ROOTS: только если явно переданы и всё ещё есть misses.
     if still_unresolved and extra_roots:
         roots = _dedupe_roots([Path(r) for r in extra_roots if r is not None and Path(r) != dataset_root])
 
@@ -728,15 +713,6 @@ def iter_ccpd_records(
     split_l = str(split).lower()
     seen: Set[str] = set()
 
-    # ВАЖНО:
-    # Раньше здесь было:
-    # extra_roots = [base_root, base_root.parent, base_root.parent.parent, Path(dataset_root)]
-    #
-    # Из-за этого при split-файлах сканировались родительские директории:
-    # data/CCPD2019/CCPD2019
-    # data/CCPD2019
-    #
-    # Теперь используем только base_root / ccpd_base.
     extra_roots: List[Path] = []
 
     if split_l in ("train", "val", "test") and split_l in split_roots:

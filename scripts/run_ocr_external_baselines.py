@@ -47,14 +47,7 @@ class ExternalOCREngine:
 
 def normalize_ocr_text(value: Any) -> str:
     """
-    Нормализация OCR-строки для честного сравнения:
-    - Unicode NFKC;
-    - uppercase для латиницы;
-    - удаление пробелов, переносов строк, пунктуации;
-    - оставляем латиницу, цифры и CJK-символы.
-
-    Важно: здесь НЕ делаем агрессивных замен O<->0, I<->1 и т.п.,
-    чтобы не завышать метрики внешних OCR.
+    Нормализация OCR-строки для сравнения
     """
     text = "" if value is None else str(value)
     text = unicodedata.normalize("NFKC", text)
@@ -253,13 +246,7 @@ class EasyOCREngine(ExternalOCREngine):
 
 def _flatten_paddle_result(obj: Any) -> List[Tuple[str, float]]:
     """
-    Терпимый парсер результатов PaddleOCR.
-
-    Поддерживает:
-    - старый формат: [[box, (text, score)], ...]
-    - вложенный старый формат: [[[box, (text, score)], ...]]
-    - dict-формат: rec_texts / rec_scores
-    - PaddleOCR 3.x result objects с json/dict-представлением
+    парсер результатов PaddleOCR
     """
     out: List[Tuple[str, float]] = []
 
@@ -360,17 +347,6 @@ def _flatten_paddle_result(obj: Any) -> List[Tuple[str, float]]:
 class PaddleOCREngine(ExternalOCREngine):
     def __init__(self, lang: str, use_gpu: bool):
         super().__init__(name="paddleocr")
-
-        # ВАЖНО:
-        # Эта ошибка:
-        # ConvertPirAttribute2RuntimeAttribute not support [pir::ArrayAttribute<pir::DoubleAttribute>]
-        # возникает внутри Paddle Runtime на CPU oneDNN/MKLDNN path.
-        #
-        # Даже если пользователь передал --paddleocr-gpu, установленный paddle
-        # может быть CPU-only. Тогда PaddleOCR фактически идёт через CPU,
-        # включает MKLDNN/oneDNN и падает.
-        #
-        # Поэтому для стабильного baseline-эксперимента отключаем MKLDNN.
         os.environ.setdefault("PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT", "0")
         os.environ.setdefault("FLAGS_use_mkldnn", "0")
 
@@ -640,14 +616,7 @@ def dataframe_to_markdown(df: pd.DataFrame) -> str:
 
 def build_summary(pred_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Строит итоговую таблицу по OCR engine и crop_mode.
-
-    Важное изменение:
-    - движки с ошибками НЕ исчезают из summary;
-    - метрики качества считаются только по строкам без engine_error;
-    - отдельно выводятся n_images, n_ok, n_errors, error_rate.
-
-    Это нужно, чтобы PaddleOCR не пропадал из отчёта, если он падает на predict/ocr.
+    Строит итоговую таблицу по OCR engine и crop_mode
     """
     if pred_df.empty:
         return pd.DataFrame()
@@ -745,11 +714,7 @@ def build_summary(pred_df: pd.DataFrame) -> pd.DataFrame:
 
 def build_normalization_delta(summary_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Сравнение эффекта нормализации bbox.
-
-    Метрики считаются только для engine/crop_mode, где есть n_ok > 0.
-    Если у engine всё упало, он всё равно будет виден в summary.csv,
-    но в normalization_delta.csv попадать не обязан.
+    Сравнение эффекта нормализации bbox
     """
     if summary_df.empty:
         return pd.DataFrame()
